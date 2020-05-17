@@ -1,24 +1,45 @@
 #include "compare.h"
 
 State Compare::target;
+
 int **Compare::obs_map;
+
 float **Compare::shortest_2d;
+
 int **Compare::grid_obs_map;
 
-bool Compare::operator()(const State s1, const State s2) {
-  // todo: replace by heuristic+cost comparison
-  return s1.cost3d + holonomic_with_obs(s1) +
-             0 * non_holonomic_without_obs(s1) >
-         s2.cost3d + holonomic_with_obs(s2) + 0 * non_holonomic_without_obs(s2);
+typedef bool (*compare2dSignature)(State, State);
+
+struct Point {
+  float x;
+  float y;
+};
+
+int quad(Point a, Point b) {
+  if (b.x > a.x && b.y > a.y)
+    return 1;
+  else if (b.x < a.x && b.y > a.y)
+    return 2;
+  else if (b.x < a.x && b.y < a.y)
+    return 3;
+  else if (b.x > a.x && b.y < a.y)
+    return 4;
+  return 0;  // won't be used
 }
 
-typedef bool (*compare2dSignature)(State, State);
 bool compare2d(State a, State b) {
   // return a.cost2d>b.cost2d;	//simple dijkstra
   return a.cost2d + abs(Compare::target.dx - a.dx) +
              abs(Compare::target.dy - a.dy) >
          b.cost2d + abs(Compare::target.dx - b.dx) +
              abs(Compare::target.dy - b.dy);
+}
+
+bool Compare::operator()(const State s1, const State s2) {
+  // todo: replace by heuristic+cost comparison
+  return s1.cost3d + holonomic_with_obs(s1) +
+             0 * non_holonomic_without_obs(s1) >
+         s2.cost3d + holonomic_with_obs(s2) + 0 * non_holonomic_without_obs(s2);
 }
 
 // currently uses dijkstra's algorithm in x-y space
@@ -30,7 +51,8 @@ void Compare::runDijkstra() {
   State src = Compare::target;
   src.dx = src.gx * DX / GX;
   src.dy = src.gy * DY / GY;
-  priority_queue<State, vector<State>, compare2dSignature> frontier(&compare2d);
+  std::priority_queue<State, std::vector<State>, compare2dSignature> frontier(
+      &compare2d);
   int vis[DX][DY];
 
   float **cost = new float *[DX];
@@ -77,36 +99,22 @@ void Compare::runDijkstra() {
       }
     }
   }
+
   Compare::shortest_2d = cost;
 
-  Mat dist(240, 240, CV_8UC3, Scalar(255, 255, 255));
+  cv::Mat dist(240, 240, CV_8UC3, cv::Scalar(255, 255, 255));
   for (int i = 0; i < 240; i++) {
     for (int j = 0; j < 240; j++) {
-      dist.at<Vec3b>(j, i) = {(unsigned char)(255 - 0.6 * shortest_2d[i][j]),
-                              (unsigned char)(200 - 0.6 * shortest_2d[i][j]),
-                              (unsigned char)(200 - 0.6 * shortest_2d[i][j])};
+      dist.at<cv::Vec3b>(j, i) = {
+          (unsigned char)(255 - 0.6 * shortest_2d[i][j]),
+          (unsigned char)(200 - 0.6 * shortest_2d[i][j]),
+          (unsigned char)(200 - 0.6 * shortest_2d[i][j])};
     }
   }
-  resize(dist, dist, Size(400, 400));
+  resize(dist, dist, cv::Size(400, 400));
   // uncomment to check if dijkstra ran properly
-  // imshow("dist", dist);
-  // waitKey(0);
-}
-
-struct pt {
-  float x;
-  float y;
-};
-
-int quad(struct pt a, struct pt b) {
-  if (b.x > a.x && b.y > a.y)
-    return 1;
-  else if (b.x < a.x && b.y > a.y)
-    return 2;
-  else if (b.x < a.x && b.y < a.y)
-    return 3;
-  else if (b.x > a.x && b.y < a.y)
-    return 4;
+  // cv::imshow("dist", dist);
+  // cv::waitKey(0);
 }
 
 float Compare::non_holonomic_without_obs(State src) {
@@ -114,7 +122,7 @@ float Compare::non_holonomic_without_obs(State src) {
   // abs(Compare::target.x-src.x)+abs(Compare::target.y-src.y)+abs(Compare::target.theta-src.theta);
   float rmin = (BOT_L / tan((BOT_M_ALPHA)*PI / 180));
 
-  struct pt CS, ACS, CE, ACE;
+  Point CS, ACS, CE, ACE;
 
   CS.x = src.dx + (rmin)*sin((src.theta) * PI / 180);  // Clockwise-Start
   CS.y = src.dy - (rmin)*cos((src.theta) * PI / 180);
@@ -140,13 +148,13 @@ float Compare::non_holonomic_without_obs(State src) {
   float lac =
       sqrt((ACS.x - CE.x) * (ACS.x - CE.x) + (ACS.y - CE.y) * (ACS.y - CE.y));
 
-  struct pt A, B;
+  Point A, B;
 
   // Code for CCC
   float pathCCC = INT_MAX;  // As CCC is not always possible
   if (!(lcc > 4 * rmin && laa > 4 * rmin)) {
     int d;
-    d = min(lcc, laa);
+    d = std::min(lcc, laa);
     int flag;  // Flag=1 for clockwise being optimal and 0 for anticlockwise
     if (d == lcc) {
       flag = 1;
@@ -171,31 +179,23 @@ float Compare::non_holonomic_without_obs(State src) {
     float ccc[4];
 
     if (flag == 0) {  // anti-clockwise being optimal
-      ccc[0] = (PI) / 2 - src.theta * PI / 180 + t -
-               p;  // Angle traversed in ACS for Path through Lower intermediate
-                   // circle
-      ccc[1] = (PI) / 2 + Compare::target.theta * PI / 180 - t -
-               p;  // Angle traversed in ACE for Path through Lower intermediate
-                   // circle
-      ccc[2] = (PI) / 2 - src.theta * PI / 180 + t +
-               p;  // Angle traversed in ACS for Path through Upper intermediate
-                   // circle
-      ccc[3] = (PI) / 2 + Compare::target.theta * PI / 180 - t +
-               p;  // Angle traversed in ACE for Path through Upper intermediate
-                   // circle
-    } else {       // clockwise being optimal
-      ccc[0] = (PI) / 2 + src.theta * PI / 180 - t +
-               p;  // Angle traversed in CS for Path through Lower intermediate
-                   // circle
-      ccc[1] = (PI) / 2 - Compare::target.theta * PI / 180 + t +
-               p;  // Angle traversed in CE for Path through Lower intermediate
-                   // circle
-      ccc[2] = (PI) / 2 + src.theta * PI / 180 - t -
-               p;  // Angle traversed in CS for Path through Upper intermediate
-                   // circle
-      ccc[3] = (PI) / 2 - Compare::target.theta * PI / 180 + t -
-               p;  // Angle traversed in CE for Path through Upper intermediate
-                   // circle
+      // Angle traversed in ACS for Path through Lower intermediate circle
+      ccc[0] = (PI) / 2 - src.theta * PI / 180 + t - p;
+      // Angle traversed in ACE for Path through Lower intermediate circle
+      ccc[1] = (PI) / 2 + Compare::target.theta * PI / 180 - t - p;
+      // Angle traversed in ACS for Path through Upper intermediate circle
+      ccc[2] = (PI) / 2 - src.theta * PI / 180 + t + p;
+      // Angle traversed in ACE for Path through Upper intermediate circle
+      ccc[3] = (PI) / 2 + Compare::target.theta * PI / 180 - t + p;
+    } else {  // clockwise being optimal
+      // Angle traversed in CS for Path through Lower intermediate circle
+      ccc[0] = (PI) / 2 + src.theta * PI / 180 - t + p;
+      // Angle traversed in CE for Path through Lower intermediate circle
+      ccc[1] = (PI) / 2 - Compare::target.theta * PI / 180 + t + p;
+      // Angle traversed in CS for Path through Upper intermediate circle
+      ccc[2] = (PI) / 2 + src.theta * PI / 180 - t - p;
+      // Angle traversed in CE for Path through Upper intermediate circle
+      ccc[3] = (PI) / 2 - Compare::target.theta * PI / 180 + t - p;
     }
 
     int i;
@@ -215,7 +215,7 @@ float Compare::non_holonomic_without_obs(State src) {
       U = ccc[2] + ccc[3] + PI - 2 * p;
     }
 
-    pathCCC = (rmin) * (min(L, U));
+    pathCCC = (rmin) * (std::min(L, U));
   }
 
   // Code for CSC

@@ -16,8 +16,8 @@ State::State() {
   this->theta = -1;
 }
 
-vector<State> State::getNextStates() {
-  vector<State> next;
+std::vector<State> State::getNextStates() {
+  std::vector<State> next;
   State n;
   float alpha, beta, r, d = 40;
 
@@ -46,11 +46,11 @@ vector<State> State::getNextStates() {
     next.push_back(n);
   }
 
-//   cout << "getNextStates() called from " << x << "," << y << "," << theta
-//        << endl;
+//   std::cout << "getNextStates() called from " << x << "," << y << "," << theta
+//        << std::endl;
 
 //   for (int i = 0; i < 3; i++) {
-//     cout << next[i].x << "," << next[i].y << "," << next[i].theta << "" << endl;
+//     std::cout << next[i].x << "," << next[i].y << "," << next[i].theta << "" << std::endl;
 //   }
 
   return next;

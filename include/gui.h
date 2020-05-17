@@ -7,8 +7,8 @@
 
 class GUI {
  public:
-  Size display_size;
-  Mat display;
+  cv::Size display_size;
+  cv::Mat display;
 
   GUI(int rows, int cols);
   void drawCar(State src);

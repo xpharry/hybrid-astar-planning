@@ -1,12 +1,12 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "bits/stdc++.h"
+#include <iostream>
+#include <vector>
+#include <queue>
+
 #include "opencv2/highgui.hpp"
 #include "opencv2/opencv.hpp"
-
-using namespace std;
-using namespace cv;
 
 #define MAPX 800
 #define MAPY 800

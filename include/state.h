@@ -29,7 +29,7 @@ class State {
 
   State();
   State(float x, float y, float theta);
-  vector<State> getNextStates();
+  std::vector<State> getNextStates();
 };
 
 #endif  // STATE_H

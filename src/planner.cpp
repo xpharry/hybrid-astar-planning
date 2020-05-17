@@ -3,7 +3,7 @@
 State previous[GX][GY][Theta];
 
 void Planner::plan(State start, State target, Map map) {
-  // initialize variables for the Compare class
+  // initiaFze variables for the Compare class
   Compare::target = target;
   Compare::obs_map = map.obs_map;
   Compare::grid_obs_map = new int *[DX];
@@ -26,7 +26,7 @@ void Planner::plan(State start, State target, Map map) {
   map.initCollisionChecker();
   map.find_near_obs();
 
-  priority_queue<State, vector<State>, Compare> pq;
+  std::priority_queue<State, std::vector<State>, Compare> pq;
   start.cost3d = 0;
   pq.push(start);
 
@@ -45,7 +45,7 @@ void Planner::plan(State start, State target, Map map) {
 
     if (abs(current.gx - target.gx) <= 1 && abs(current.gy - target.gy) <= 1 &&
         abs(current.gtheta - target.gtheta) <= 5) {
-      cout << "Reached target." << endl;
+      std::cout << "Reached target." << std::endl;
 
       State Dummy;
       current.change =
@@ -80,7 +80,7 @@ void Planner::plan(State start, State target, Map map) {
 
     vis[current.gx][current.gy][current.gtheta] = 1;
 
-    vector<State> next = current.getNextStates();
+    std::vector<State> next = current.getNextStates();
 
     for (int i = 0; i < next.size(); i++) {
       // display.drawCar(next[i]);
@@ -102,7 +102,7 @@ void Planner::plan(State start, State target, Map map) {
     }
   }
 
-  cout << "Done." << endl;
+  std::cout << "Done." << std::endl;
   
   display.show(0);
 

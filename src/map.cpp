@@ -9,10 +9,10 @@ Map::Map() {
     }
   }
 
-  Mat obsmap = imread("../data/map1.png", 0);
+  cv::Mat obsmap = cv::imread("../data/map1.png", 0);
 
   if (obsmap.empty()) {
-    cout << "Error: Map is empty!" << endl;
+    std::cout << "Error: Map is empty!" << std::endl;
   }
 
   for (int i = 0; i < MAPX; i++) {
@@ -25,7 +25,7 @@ Map::Map() {
     }
   }
 
-  cout << "Cost Map Initialized!" << endl;
+  std::cout << "Cost Map Initialized!" << std::endl;
 }
 
 void Map::initCollisionChecker() {
@@ -43,15 +43,15 @@ void Map::initCollisionChecker() {
     for (int i = 1; i < MAPX; i++)
       acc_obs_map[i][j] = acc_obs_map[i - 1][j] + acc_obs_map[i][j];
 
-  cout << "Collision checker initialized!" << endl;
+  std::cout << "Collision checker initialized!" << std::endl;
 
   return;
 }
 
 bool Map::checkCollision(State pos) {
-  // cout << "Collision checking: " << endl;
-  // cout << pos.x << "," << pos.y << "," << pos.theta << endl;
-  // cout << pos.gx << "," << pos.gy << "," << pos.gtheta << endl;
+  // std::cout << "Collision checking: " << std::endl;
+  // std::cout << pos.x << "," << pos.y << "," << pos.theta << std::endl;
+  // std::cout << pos.gx << "," << pos.gy << "," << pos.gtheta << std::endl;
 
   if (pos.x >= MAPX || pos.x < 0 || pos.y >= MAPY || pos.y < 0 ||
       pos.theta >= Theta || pos.theta < 0)
@@ -61,7 +61,7 @@ bool Map::checkCollision(State pos) {
       pos.gtheta >= Theta || pos.gtheta < 0)
     return true;
 
-  // cout << "Out of Bounds" << endl;
+  // std::cout << "Out of Bounds" << std::endl;
 
   // first use a bounding box around car to check for collision in O(1) time
   int max_x, min_x, max_y, min_y;
@@ -82,7 +82,7 @@ bool Map::checkCollision(State pos) {
     return false;
   }
 
-  cout << "Obstacle present inside box" << endl;
+  std::cout << "Obstacle present inside box" << std::endl;
 
   // brute force check through the car
 
@@ -126,7 +126,7 @@ void Map::find_near_obs() {
     }
   }
 
-  queue<node> q;
+  std::queue<node> q;
 
   for (int i = 0; i < MAPX; i++) {
     for (int j = 0; j < MAPY; j++) {
@@ -148,9 +148,9 @@ void Map::find_near_obs() {
     node_p = q.front();
     q.pop();
 
-    // cout << "nearest_obstacle size" << nearest_obstacle.size()
-    //      << nearest_obstacle[0].size() << endl;
-    // cout << "obs_map size" << obs_map.size() << obs_map[0].size() << endl;
+    // std::cout << "nearest_obstacle size" << nearest_obstacle.size()
+    //      << nearest_obstacle[0].size() << std::endl;
+    // std::cout << "obs_map size" << obs_map.size() << obs_map[0].size() << std::endl;
 
     for (int i = node_p.x - 1; i <= node_p.x + 1; i++) {
       for (int j = node_p.y - 1; j <= node_p.y + 1; j++) {
