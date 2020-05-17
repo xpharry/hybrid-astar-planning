@@ -82,9 +82,9 @@ void Compare::runDijkstra() {
   Mat dist(240, 240, CV_8UC3, Scalar(255, 255, 255));
   for (int i = 0; i < 240; i++) {
     for (int j = 0; j < 240; j++) {
-      dist.at<Vec3b>(j, i) = {255 - 0.6 * shortest_2d[i][j],
-                              200 - 0.6 * shortest_2d[i][j],
-                              200 - 0.6 * shortest_2d[i][j]};
+      dist.at<Vec3b>(j, i) = {(unsigned char)(255 - 0.6 * shortest_2d[i][j]),
+                              (unsigned char)(200 - 0.6 * shortest_2d[i][j]),
+                              (unsigned char)(200 - 0.6 * shortest_2d[i][j])};
     }
   }
   resize(dist, dist, Size(400, 400));
