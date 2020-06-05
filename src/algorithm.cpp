@@ -12,8 +12,6 @@ int **Algorithm::grid_obs_map;
 
 State previous[GX][GY][Theta];
 
-typedef bool (*compare2dSignature)(State, State);
-
 struct Point {
   float x;
   float y;
@@ -31,13 +29,14 @@ int quad(Point a, Point b) {
   return 0;  // won't be used
 }
 
-bool compare2d(State a, State b) {
-  // return a.cost2d > b.cost2d;	//simple dijkstra
-  return a.cost2d + abs(Algorithm::goal.dx - a.dx) +
-             abs(Algorithm::goal.dy - a.dy) >
-         b.cost2d + abs(Algorithm::goal.dx - b.dx) +
-             abs(Algorithm::goal.dy - b.dy);
-}
+struct Compare2d {
+  bool operator()(const State &a, const State &b) {
+    // return a.cost2d > b.cost2d;	//simple dijkstra
+    return a.cost2d + abs(Algorithm::goal.dx - a.dx) + abs(Algorithm::goal.dy - a.dy) >
+           b.cost2d + abs(Algorithm::goal.dx - b.dx) + abs(Algorithm::goal.dy - b.dy);
+  }
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -292,8 +291,7 @@ void Algorithm::astar_planning() {
   State src = Algorithm::goal;
   src.dx = src.gx * DX / GX;
   src.dy = src.gy * DY / GY;
-  std::priority_queue<State, std::vector<State>, compare2dSignature> frontier(
-      &compare2d);
+  std::priority_queue<State, std::vector<State>, Compare2d> frontier;
   int vis[DX][DY];
 
   float **cost = new float *[DX];
@@ -372,7 +370,7 @@ void Algorithm::hybrid_astar_planning() {
 
   // -------------------------------------------------------
   // Initialize the priority_queue and push the initial pose.
-  std::priority_queue<State, std::vector<State>, Compare> pq;
+  std::priority_queue<State, std::vector<State>, Compare3d> pq;
   initial.cost3d = 0;
   pq.push(initial);
 

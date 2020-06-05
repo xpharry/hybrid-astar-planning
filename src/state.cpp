@@ -25,7 +25,7 @@ std::vector<State> State::getNextStates() {
   State n;
 
   // Bicycle model parameters
-  float alpha, beta, r, d = 40;
+  float alpha, beta, r, d = 10;
 
   // Try out possible values of alpha
   // among 3 angles: [-BOT_M_ALPHA, 0, -BOT_M_ALPHA].

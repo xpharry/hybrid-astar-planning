@@ -3,7 +3,7 @@
 
 #include "state.h"
 
-struct Compare {
+struct Compare3d {
   bool operator()(const State &s1, const State &s2);
 };
 
