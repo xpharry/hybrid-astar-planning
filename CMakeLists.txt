@@ -11,6 +11,6 @@ include_directories(include maps)
 
 file(GLOB SOURCES "src/*.cpp")
 
-add_executable(astar ${SOURCES})
+add_executable(hybrid_astar ${SOURCES})
 
-target_link_libraries(astar ${OpenCV_LIBS})
+target_link_libraries(hybrid_astar ${OpenCV_LIBS})

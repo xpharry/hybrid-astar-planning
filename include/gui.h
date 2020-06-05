@@ -5,6 +5,10 @@
 #include "state.h"
 #include "utils.h"
 
+/**
+ * GUI class:
+ * To display the map and visualize the generated path.
+*/
 class GUI {
  public:
   cv::Size display_size;

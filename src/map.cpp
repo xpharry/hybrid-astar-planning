@@ -1,5 +1,8 @@
 #include "map.h"
 
+/*
+ * Constructor
+ */
 Map::Map() {
   obs_map = new int *[MAPX];
   for (int i = 0; i < MAPX; i++) {
@@ -149,7 +152,7 @@ void Map::find_near_obs() {
     q.pop();
 
     // std::cout << "nearest_obstacle size" << nearest_obstacle.size()
-    //      << nearest_obstacle[0].size() << std::endl;
+    //           << nearest_obstacle[0].size() << std::endl;
     // std::cout << "obs_map size" << obs_map.size() << obs_map[0].size() << std::endl;
 
     for (int i = node_p.x - 1; i <= node_p.x + 1; i++) {
@@ -159,7 +162,6 @@ void Map::find_near_obs() {
           node_c.x = i;
           node_c.y = j;
           node_c.nearest_obstacle = node_p.nearest_obstacle + 1;
-
           nearest_obstacle[i][j] = node_c.nearest_obstacle;
           q.push(node_c);
         }

@@ -1,25 +1,29 @@
-#include "planner.h"
+#include "algorithm.h"
 
 State getStartState() {
-  // todo: read from yml file
+  // FutureWork: read from yml file
   return State(700, 100, 36);
 }
 
 State getTargetState() {
-  // todo: read from yml file
+  // FutureWork: read from yml file
   return State(100, 600, 18);
 }
 
 int main() {
   Map map;
 
-  State start = getStartState();
+  State initial = getStartState();
 
-  State target = getTargetState();
+  State goal = getTargetState();
 
-  Planner astar;
+  Algorithm algorithm(map);
 
-  astar.plan(start, target, map);
+  algorithm.updateInitial(initial);
+
+  algorithm.updateGoal(goal);
+
+  algorithm.hybrid_astar_planning();
 
   return 0;
 }
