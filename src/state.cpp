@@ -41,7 +41,7 @@ std::vector<State> State::getNextStates() {
   double alpha = 0;
   double d_theta = 0;
   double radius = 0; // rotation radius
-  double dist = 20.0; // distance travelled within a unit time
+  double dist = 40.0; // distance travelled within a unit time
 
   // Try out possible values of alpha
   // among 3 angles: [-VEH_M_ALPHA, 0, -VEH_M_ALPHA].
@@ -63,14 +63,14 @@ std::vector<State> State::getNextStates() {
                   + radius * cos(theta * 2.0 * PI / Theta);
 
       // new theta = theta + d_theta
-      theta = theta + d_theta * 180 / PI / Theta_Res;
+      double new_theta = theta + d_theta * 180 / PI / Theta_Res;
 
       // normalize
-      if (theta > 0) {
-        state.theta = fmod(theta, Theta);
+      if (new_theta > 0) {
+        state.theta = fmod(new_theta, Theta);
       }
       else {
-        state.theta = theta + Theta;
+        state.theta = new_theta + Theta;
       }
     }
 
