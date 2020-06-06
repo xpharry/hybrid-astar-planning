@@ -4,25 +4,35 @@
 #include "state.h"
 #include "utils.h"
 
-struct node {
+struct Node {
   int x;
   int y;
   int nearest_obstacle;
 };
 
 class Map {
- public:
+public:
+  /**
+   * Constructor
+   *
+   */
+  Map();
+
+  void initCollisionChecker();
+
+  bool checkCollision(State pos);
+
+  void findNearObs();
+
+  int nearestObstacleDistance(State pos);
+
+  bool isBoundaryObstacle(int i, int j);
+
+public:
   int **obs_map;
   int **acc_obs_map;
   int **nearest_obstacle;
   int obs_dist_max;
-
-  Map();
-  void initCollisionChecker();
-  bool checkCollision(State pos);
-  void find_near_obs();
-  int nearest_obstacle_distance(State pos);
-  bool is_boundary_obstacle(int i, int j);
 };
 
-#endif  // MAP_H
+#endif // MAP_H

@@ -29,9 +29,9 @@
 #define Theta_Res 5 // angle resolution
 
 // vehicle shape
-#define BOT_L 34 // vehicle length
-#define BOT_W 20 // vehicle width
-#define BOT_M_ALPHA 30 // maximal steering angle
+#define VEH_LEN 34 // vehicle length
+#define VEH_WID 20 // vehicle width
+#define VEH_M_ALPHA 30 // maximal steering angle
 
 #define PI 3.14159
 

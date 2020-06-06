@@ -4,6 +4,7 @@
  * Constructor
  */
 Map::Map() {
+  // Initilize the geometric map.
   obs_map = new int *[MAPX];
   for (int i = 0; i < MAPX; i++) {
     obs_map[i] = new int[MAPY];
@@ -12,12 +13,14 @@ Map::Map() {
     }
   }
 
+  // Load the map using OpenCV as a gray image.
   cv::Mat obsmap = cv::imread("../data/map1.png", 0);
 
   if (obsmap.empty()) {
     std::cout << "Error: Map is empty!" << std::endl;
   }
 
+  // Fill the obstalces.
   for (int i = 0; i < MAPX; i++) {
     for (int j = 0; j < MAPY; j++) {
       if (obsmap.at<uchar>(j / 2, i / 2) <= 120) {
@@ -31,6 +34,10 @@ Map::Map() {
   std::cout << "Cost Map Initialized!" << std::endl;
 }
 
+/**
+ * Collision Checker.
+ *
+ */
 void Map::initCollisionChecker() {
   acc_obs_map = new int *[MAPX];
   for (int i = 0; i < MAPX; i++) {
@@ -51,6 +58,10 @@ void Map::initCollisionChecker() {
   return;
 }
 
+/**
+ * Collision Checker.
+ *
+ */
 bool Map::checkCollision(State pos) {
   // std::cout << "Collision checking: " << std::endl;
   // std::cout << pos.x << "," << pos.y << "," << pos.theta << std::endl;
@@ -68,15 +79,14 @@ bool Map::checkCollision(State pos) {
 
   // first use a bounding box around car to check for collision in O(1) time
   int max_x, min_x, max_y, min_y;
-  max_x = pos.x + BOT_L * abs(cos(pos.theta * 2 * PI / Theta)) / 2 +
-          BOT_W * abs(sin(pos.theta * 2 * PI / Theta)) / 2 + 1;
-  min_x = pos.x - BOT_L * abs(cos(pos.theta * 2 * PI / Theta)) / 2 -
-          BOT_W * abs(sin(pos.theta * 2 * PI / Theta)) / 2 - 1;
-
-  max_y = pos.y + BOT_L * abs(sin(pos.theta * 2 * PI / Theta)) / 2 +
-          BOT_W * abs(cos(pos.theta * 2 * PI / Theta)) / 2 + 1;
-  min_y = pos.y - BOT_L * abs(sin(pos.theta * 2 * PI / Theta)) / 2 -
-          BOT_W * abs(cos(pos.theta * 2 * PI / Theta)) / 2 - 1;
+  max_x = pos.x + VEH_LEN * abs(cos(pos.theta * 2 * PI / Theta)) / 2
+                + VEH_WID * abs(sin(pos.theta * 2 * PI / Theta)) / 2 + 1;
+  min_x = pos.x - VEH_LEN * abs(cos(pos.theta * 2 * PI / Theta)) / 2
+                - VEH_WID * abs(sin(pos.theta * 2 * PI / Theta)) / 2 - 1;
+  max_y = pos.y + VEH_LEN * abs(sin(pos.theta * 2 * PI / Theta)) / 2
+                + VEH_WID * abs(cos(pos.theta * 2 * PI / Theta)) / 2 + 1;
+  min_y = pos.y - VEH_LEN * abs(sin(pos.theta * 2 * PI / Theta)) / 2
+                - VEH_WID * abs(cos(pos.theta * 2 * PI / Theta)) / 2 - 1;
 
   if (max_x >= MAPX || min_x < 0 || max_y >= MAPY || min_y < 0) return true;
 
@@ -89,8 +99,8 @@ bool Map::checkCollision(State pos) {
 
   // brute force check through the car
 
-  for (float i = -BOT_L / 2.0; i <= BOT_L / 2.0 + 0.001; i += 1) {
-    for (float j = -BOT_W / 2.0; j <= BOT_W / 2.0 + 0.001; j += 1) {
+  for (double i = -VEH_LEN / 2.0; i <= VEH_LEN / 2.0 + 0.001; i += 1) {
+    for (double j = -VEH_WID / 2.0; j <= VEH_WID / 2.0 + 0.001; j += 1) {
       int s = pos.x + i * cos(pos.theta * 2.0 * PI / Theta) +
               j * sin(pos.theta * 2.0 * PI / Theta) + 0.001;
       int t = pos.y + i * sin(pos.theta * 2.0 * PI / Theta) +
@@ -105,7 +115,14 @@ bool Map::checkCollision(State pos) {
   return false;
 }
 
-bool Map::is_boundary_obstacle(int i, int j) {
+/**
+ * Check if the input coordinate is at the boundary of the obstacles.
+ *
+ * Check in four directions.
+ *
+ * @return true or false.
+ */
+bool Map::isBoundaryObstacle(int i, int j) {
   for (int k = i - 1; k <= i + 1; k++) {
     for (int l = j - 1; l <= j + 1; l++) {
       if (!(k >= 0 && k < MAPX && l >= 0 && l < MAPY)) continue;
@@ -117,8 +134,14 @@ bool Map::is_boundary_obstacle(int i, int j) {
   return false;
 }
 
-void Map::find_near_obs() {
-  node node_p, node_c;
+/**
+ * Find nearest obstacles.
+ *
+ * Use BFS Search.
+ *
+ */
+void Map::findNearObs() {
+  Node node_p, node_c;
 
   nearest_obstacle = new int *[MAPX];
 
@@ -129,12 +152,12 @@ void Map::find_near_obs() {
     }
   }
 
-  std::queue<node> q;
+  std::queue<Node> q;
 
   for (int i = 0; i < MAPX; i++) {
     for (int j = 0; j < MAPY; j++) {
       if (obs_map[i][j] == 1) {
-        if (!is_boundary_obstacle(i, j)) {
+        if (!isBoundaryObstacle(i, j)) {
           nearest_obstacle[i][j] = -1;
         } else {
           node_p.x = i;
@@ -172,6 +195,10 @@ void Map::find_near_obs() {
   obs_dist_max = node_p.nearest_obstacle;
 }
 
-int Map::nearest_obstacle_distance(State pos) {
+/**
+ * Measure the distance to the nearest obstacle.
+ *
+ */
+int Map::nearestObstacleDistance(State pos) {
   return nearest_obstacle[(int)pos.x][(int)pos.y];
 }

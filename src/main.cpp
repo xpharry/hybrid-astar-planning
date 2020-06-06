@@ -23,7 +23,7 @@ int main() {
 
   algorithm.updateGoal(goal);
 
-  algorithm.hybrid_astar_planning();
+  algorithm.hybridAstarPlanning();
 
   return 0;
 }

@@ -4,32 +4,46 @@
 #include "utils.h"
 
 class State {
- public:
-  float x;
-  float y;
-  float theta;
+public: // methods
+  /**
+   * Constructor
+   */
+  State();
+
+  /**
+   * Constructor
+   */
+  State(double x, double y, double theta);
+
+  /**
+   * get the states of the next move
+   *
+   */
+  std::vector<State> getNextStates();
+
+public: // variables
+  // 3d state on the geometric map
+  double x;
+  double y;
+  double theta;
 
   // gx, gy and gtheta are co-ordinates in the 80X80 grid
   int gx;
   int gy;
   int gtheta;
 
-  // for running dijkstra
+  // for 2d planning
   int dx;
   int dy;
 
-  float cost2d;
-  float cost3d;
+  double cost2d;
+  double cost3d;
 
-  float change;
-  float velocity;
+  double change;
+  double velocity;
 
+  State *prev;
   State *next;
-  State *previous;
-
-  State();
-  State(float x, float y, float theta);
-  std::vector<State> getNextStates();
 };
 
-#endif  // STATE_H
+#endif // STATE_H

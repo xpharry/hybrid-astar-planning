@@ -4,7 +4,6 @@
 #include "utils.h"
 #include "map.h"
 #include "state.h"
-#include "compare.h"
 #include "gui.h"
 
 class Algorithm {
@@ -19,15 +18,29 @@ public:
 
   void updateGoal(State goal);
 
-  // heuristic functions
-  float non_holonomic_without_obs(State src);
-  float holonomic_with_obs(State src);
+  /*****************************************************************************
+   * A* Planning
+   *   - on the 2d grid map
+   *   - state: [x, y]
+   ****************************************************************************/
+  void astarPlanning();
 
-  // A* Search on the 2d grid map
-  void astar_planning();
+  /*****************************************************************************
+   * heuristic functions
+   ****************************************************************************/
 
-  // Hybrid A* Planning on the 3d map, [x, y, theta]
-  void hybrid_astar_planning();
+  // Based on Dijkstra or A* planning
+  double holonomicWithObs(State src);
+
+  // Use Dubin's path length ignoring obstacles
+  double nonHolonomicWithoutObs(State src);
+
+  /*****************************************************************************
+   * Hybrid A* Planning
+   *   - on the 3d map
+   *   - state: [x, y, theta]
+   ****************************************************************************/
+  void hybridAstarPlanning();
 
 public:
   Map m_map;
@@ -35,7 +48,7 @@ public:
   static State goal;
   static int **obs_map;
   static int **grid_obs_map;
-  static float **shortest_2d;
+  static double **shortest_2d;
 };
 
-#endif  // ALGORITHM_H
+#endif // ALGORITHM_H
