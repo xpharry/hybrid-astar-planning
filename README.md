@@ -11,7 +11,7 @@ The code is ready to run a real Autonomous Vehicle with minor modifications, alt
 * A 3D discrete search space is used but unlike traditional A*, hybrid-A* associates with each grid cell a continuous 3D state of the vehicle. The resulting path is guaranteed to be drivable (standard A* can only produce piece-wise linear paths).
 * The search algorithm is guided by two heuristics -
 	* 'non-holonomic-without-obstacles' uses Dubin's path length ignoring obstacles
-	* 'holonomic-with-obstacles' uses shortest path in 2D computed using dijkstra ignoring holonomic constraints of vehicle
+	* 'holonomic-with-obstacles' uses shortest path in 2D computed using A* (or Dijkstra's) ignoring holonomic constraints of vehicle
 * To improve search speed, the algorithm analytically expands nodes closer to goal using dubins path and checks it for collision with current obstacle map.
 
 ## Parameters
