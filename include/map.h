@@ -16,7 +16,13 @@ public:
    * Constructor
    *
    */
-  Map();
+  Map() {}
+
+  /**
+   * Constructor
+   *
+   */
+  Map(std::string map_file);
 
   void initCollisionChecker();
 

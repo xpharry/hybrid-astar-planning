@@ -69,8 +69,10 @@ struct Compare3d {
 
 bool Compare3d::operator()(const State &s1, const State &s2) {
   // return s1.cost3d > s2.cost3d;
-  return s1.cost3d + Algorithm::holonomicWithObs(s1) + 0 * Algorithm::nonHolonomicWithoutObs(s1) >
-         s2.cost3d + Algorithm::holonomicWithObs(s2) + 0 * Algorithm::nonHolonomicWithoutObs(s2);
+  // return s1.cost3d + Algorithm::holonomicWithObs(s1) >
+  //        s2.cost3d + Algorithm::holonomicWithObs(s2);
+  return s1.cost3d + fmax(Algorithm::holonomicWithObs(s1), Algorithm::nonHolonomicWithoutObs(s1)) >
+         s2.cost3d + fmax(Algorithm::holonomicWithObs(s2), Algorithm::nonHolonomicWithoutObs(s2));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,6 +120,8 @@ void Algorithm::updateGoal(State goal) {
  * A* Search on the 2d grid map
  *
  * Currently implemented as Dijkstra's Algorithm.
+ *
+ * Dynamic Programming.
  *
  */
 void Algorithm::astarPlanning() {
@@ -499,9 +503,9 @@ void Algorithm::hybridAstarPlanning() {
           // Calculate the accumulated costs.
           // Turing costs more than forward moving.
           if (i == 1) {
-            next[i].cost3d = current.cost3d + 5;
+            next[i].cost3d = current.cost3d + 6;
           } else {
-            next[i].cost3d = current.cost3d + 7;
+            next[i].cost3d = current.cost3d + 9;
           }
           pq.push(next[i]);
 

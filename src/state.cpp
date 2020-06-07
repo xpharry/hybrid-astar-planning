@@ -41,10 +41,10 @@ std::vector<State> State::getNextStates() {
   double alpha = 0;
   double d_theta = 0;
   double radius = 0; // rotation radius
-  double dist = 40.0; // distance travelled within a unit time
+  double dist = 30.0; // distance travelled within a unit time
 
   // Try out possible values of alpha
-  // among 3 angles: [-VEH_M_ALPHA, 0, -VEH_M_ALPHA].
+  // among 3 angles: [-VEH_M_ALPHA, 0, VEH_M_ALPHA].
   for (alpha = -VEH_M_ALPHA; alpha <= VEH_M_ALPHA + 0.001;
        alpha += VEH_M_ALPHA) {
 

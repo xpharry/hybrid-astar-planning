@@ -3,7 +3,7 @@
 /*
  * Constructor
  */
-Map::Map() {
+Map::Map(std::string map_file) {
   // Initilize the geometric map.
   obs_map = new int *[MAPX];
   for (int i = 0; i < MAPX; i++) {
@@ -14,7 +14,7 @@ Map::Map() {
   }
 
   // Load the map using OpenCV as a gray image.
-  cv::Mat obsmap = cv::imread("../data/map1.png", 0);
+  cv::Mat obsmap = cv::imread(map_file, 0);
 
   if (obsmap.empty()) {
     std::cout << "Error: Map is empty!" << std::endl;

@@ -11,7 +11,7 @@ State getTargetState() {
 }
 
 int main() {
-  Map map;
+  Map map("../data/map1.png");
 
   State initial = getStartState();
 
