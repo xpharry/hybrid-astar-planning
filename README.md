@@ -25,6 +25,14 @@ The code is ready to run a real Autonomous Vehicle with minor modifications, alt
 
 <img src="https://imgur.com/wDC3stV.png" alt="Example1" width="400"/>             <img src="https://imgur.com/GZH6w0V.png" alt="Example2" width="400"/>
 
+## Future Work
+
+- Path Smoothing
+- Reverse Motion
+- User Interaction
+- Viusalization Optimization
+- Motion Control
+
 ## Resources
 
 * [Practical Search Techniques in Path Planning for Autonomous Driving](https://ai.stanford.edu/~ddolgov/papers/dolgov_gpp_stair08.pdf)
