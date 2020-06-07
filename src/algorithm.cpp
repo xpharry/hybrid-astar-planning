@@ -446,30 +446,31 @@ void Algorithm::hybridAstarPlanning() {
         abs(current.gtheta - goal.gtheta) <= 5) {
       std::cout << "Reached goal." << std::endl;
 
-      State Dummy;
+      State dummy;
       current.change =
           PRIORITY_OBSTACLE_NEAR *
               (m_map.obs_dist_max - m_map.nearestObstacleDistance(current)) /
               (double)(m_map.obs_dist_max - 1) +
           fabs(current.theta) / VEH_M_ALPHA + 1;
 
+      // Draw trajectory from goal to initial.
+      // FutureWork: reverse the order which makes more sense.
       while (current.x != initial.x || current.y != initial.y ||
              current.theta != initial.theta) {
         current.velocity = VELOCITY_MAX / current.change;
         display.drawCar(current);
-        display.show(
-            2000 /
-            current.velocity);  // This can be removed while executing the algo
-        Dummy = previous[current.gx][current.gy][current.gtheta];
-        Dummy.change =
-            PRIORITY_MOVEMENT * fabs(Dummy.theta - current.theta) /
+        display.show(2000 / current.velocity); // This can be removed while executing the algo
+        dummy = previous[current.gx][current.gy][current.gtheta];
+        dummy.change =
+            PRIORITY_MOVEMENT * fabs(dummy.theta - current.theta) /
                 (2.0 * VEH_M_ALPHA) +
             PRIORITY_OBSTACLE_NEAR *
-                (m_map.obs_dist_max - m_map.nearestObstacleDistance(Dummy)) /
+                (m_map.obs_dist_max - m_map.nearestObstacleDistance(dummy)) /
                 (double)(m_map.obs_dist_max - 1) +
-            fabs(Dummy.theta) / VEH_M_ALPHA + 1;
-        current = Dummy;
+            fabs(dummy.theta) / VEH_M_ALPHA + 1;
+        current = dummy;
       }
+
       break;
     }
 
@@ -504,7 +505,7 @@ void Algorithm::hybridAstarPlanning() {
           }
           pq.push(next[i]);
 
-          //
+          // Construct edges (links).
           previous[next[i].gx][next[i].gy][next[i].gtheta] = current;
         }
       }
