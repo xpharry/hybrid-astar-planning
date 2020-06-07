@@ -68,10 +68,9 @@ struct Compare3d {
 };
 
 bool Compare3d::operator()(const State &s1, const State &s2) {
-  // FutureWork: replace by cost + heuristic comparison
-  return s1.cost3d > s2.cost3d;
-  // return s1.cost3d + holonomicWithObs(s1) + 0 * nonHolonomicWithoutObs(s1) >
-  //        s2.cost3d + holonomicWithObs(s2) + 0 * nonHolonomicWithoutObs(s2);
+  // return s1.cost3d > s2.cost3d;
+  return s1.cost3d + Algorithm::holonomicWithObs(s1) + 0 * Algorithm::nonHolonomicWithoutObs(s1) >
+         s2.cost3d + Algorithm::holonomicWithObs(s2) + 0 * Algorithm::nonHolonomicWithoutObs(s2);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,27 +117,34 @@ void Algorithm::updateGoal(State goal) {
 /**
  * A* Search on the 2d grid map
  *
+ * Currently implemented as Dijkstra's Algorithm.
+ *
  */
 void Algorithm::astarPlanning() {
   State src = Algorithm::goal;
   src.dx = src.gx * DX / GX;
   src.dy = src.gy * DY / GY;
-  std::priority_queue<State, std::vector<State>, Compare2d> frontier;
-  int vis[DX][DY];
 
+  std::priority_queue<State, std::vector<State>, Compare2d> frontier;
+
+  int visited[DX][DY];
+  memset(visited, 0, sizeof(int) * DX * DY);
+
+  // Initialize cost array with the size of [DX, DY]
   double **cost = new double *[DX];
   for (int i = 0; i < DX; i++) {
     cost[i] = new double[DY];
     for (int j = 0; j < DY; j++) cost[i][j] = 0;
   }
 
-  memset(vis, 0, sizeof(int) * DX * DY);
-
+  // Assign a big value (10000 here) to each element in cost array
   for (int i = 0; i < DX; i++) {
     for (int j = 0; j < DY; j++) {
       cost[i][j] = 10000;
     }
   }
+
+  // Assign 0 cost to src position (No travel cost).
   cost[src.dx][src.dy] = 0;
 
   frontier.push(src);
@@ -149,30 +155,35 @@ void Algorithm::astarPlanning() {
     int x = current.dx;
     int y = current.dy;
 
-    if (vis[x][y]) continue;
+    if (visited[x][y]) continue;
 
-    vis[x][y] = 1;
+    visited[x][y] = 1;
 
     for (int i = -1; i <= 1; i++) {
       for (int j = -1; j <= 1; j++) {
+        // Continue if going beyond the grid map
         if (x + i < 0 || x + i >= DX || y + j < 0 || y + j >= DY) continue;
+        // Continue if it is [x, y] itself or obstalce.
         if ((i == 0 && j == 0) || Algorithm::grid_obs_map[x + i][y + j] != 0)
           continue;
 
+        // Update cost table if find a lower cost path.
         if (cost[x + i][y + j] > cost[x][y] + sqrt(i * i + j * j)) {
           cost[x + i][y + j] = cost[x][y] + sqrt(i * i + j * j);
-          State tempstate;
-          tempstate.dx = current.dx + i;
-          tempstate.dy = current.dy + j;
-          tempstate.cost2d = cost[x + i][y + j];
-          frontier.push(tempstate);
+          State temp;
+          temp.dx = current.dx + i;
+          temp.dy = current.dy + j;
+          temp.cost2d = cost[x + i][y + j];
+          frontier.push(temp);
         }
       }
     }
   }
 
+  // g cost lookup table
   Algorithm::shortest_2d = cost;
 
+  // Display the g cost table.
   cv::Mat dist(240, 240, CV_8UC3, cv::Scalar(255, 255, 255));
   for (int i = 0; i < 240; i++) {
     for (int j = 0; j < 240; j++) {
@@ -183,6 +194,7 @@ void Algorithm::astarPlanning() {
     }
   }
   resize(dist, dist, cv::Size(400, 400));
+
   // uncomment to check if dijkstra ran properly
   // cv::imshow("dist", dist);
   // cv::waitKey(0);
@@ -206,42 +218,42 @@ double Algorithm::holonomicWithObs(State src) {
 double Algorithm::nonHolonomicWithoutObs(State src) {
   // return
   // abs(Algorithm::goal.x-src.x)+abs(Algorithm::goal.y-src.y)+abs(Algorithm::goal.theta-src.theta);
+
+  // minimal radius which happens with the maximal steering angle
   double rmin = (VEH_LEN / tan((VEH_M_ALPHA)*PI / 180));
 
   Point CS, ACS, CE, ACE;
 
-  CS.x = src.dx + (rmin)*sin((src.theta) * PI / 180);  // Clockwise-Start
+  // Clockwise-Start
+  CS.x = src.dx + (rmin)*sin((src.theta) * PI / 180);
   CS.y = src.dy - (rmin)*cos((src.theta) * PI / 180);
 
-  ACS.x = src.dx - (rmin)*sin((src.theta) * PI / 180);  // Anti-Clockwise-Start
+  // Anti-Clockwise-Start
+  ACS.x = src.dx - (rmin)*sin((src.theta) * PI / 180);
   ACS.y = src.dy + (rmin)*cos((src.theta) * PI / 180);
 
-  CE.x = Algorithm::goal.dx +
-         (rmin)*sin((Algorithm::goal.theta) * PI / 180);  // Clockwise-End
+  // Clockwise-End
+  CE.x = Algorithm::goal.dx + (rmin)*sin((Algorithm::goal.theta) * PI / 180);
   CE.y = Algorithm::goal.dy - (rmin)*cos((Algorithm::goal.theta) * PI / 180);
 
-  ACE.x = Algorithm::goal.dx -
-          (rmin)*sin((Algorithm::goal.theta) * PI / 180);  // Anti-Clockwise-End
+  // Anti-Clockwise-End
+  ACE.x = Algorithm::goal.dx - (rmin)*sin((Algorithm::goal.theta) * PI / 180);
   ACE.y = Algorithm::goal.dy + (rmin)*cos((Algorithm::goal.theta) * PI / 180);
 
-  double lcc =
-      sqrt((CS.x - CE.x) * (CS.x - CE.x) +
-           (CS.y - CE.y) * (CS.y - CE.y));  // clockwise-clockwise length
-  double laa = sqrt((ACS.x - ACE.x) * (ACS.x - ACE.x) +
-                   (ACS.y - ACE.y) * (ACS.y - ACE.y));
-  double lca =
-      sqrt((CS.x - ACE.x) * (CS.x - ACE.x) + (CS.y - ACE.y) * (CS.y - ACE.y));
-  double lac =
-      sqrt((ACS.x - CE.x) * (ACS.x - CE.x) + (ACS.y - CE.y) * (ACS.y - CE.y));
+  // clockwise-clockwise length
+  double lcc = sqrt((CS.x - CE.x) * (CS.x - CE.x) + (CS.y - CE.y) * (CS.y - CE.y));
+  double laa = sqrt((ACS.x - ACE.x) * (ACS.x - ACE.x) + (ACS.y - ACE.y) * (ACS.y - ACE.y));
+  double lca = sqrt((CS.x - ACE.x) * (CS.x - ACE.x) + (CS.y - ACE.y) * (CS.y - ACE.y));
+  double lac = sqrt((ACS.x - CE.x) * (ACS.x - CE.x) + (ACS.y - CE.y) * (ACS.y - CE.y));
 
   Point A, B;
 
   // Code for CCC
-  double pathCCC = INT_MAX;  // As CCC is not always possible
+  double pathCCC = INT_MAX; // As CCC is not always possible
   if (!(lcc > 4 * rmin && laa > 4 * rmin)) {
     int d;
     d = std::min(lcc, laa);
-    int flag;  // Flag=1 for clockwise being optimal and 0 for anticlockwise
+    int flag; // Flag=1 for clockwise being optimal and 0 for anticlockwise
     if (d == lcc) {
       flag = 1;
       A = CS;
@@ -293,10 +305,10 @@ double Algorithm::nonHolonomicWithoutObs(State src) {
     }
 
     double L, U;
-    if (flag == 0) {  // anticlockwise
+    if (flag == 0) { // anticlockwise
       L = ccc[0] + ccc[1] + PI - 2 * p;
       U = ccc[2] + ccc[3] + PI + 2 * p;
-    } else {  // clockwise
+    } else {         // clockwise
       L = ccc[0] + ccc[1] + PI + 2 * p;
       U = ccc[2] + ccc[3] + PI - 2 * p;
     }
@@ -306,10 +318,8 @@ double Algorithm::nonHolonomicWithoutObs(State src) {
 
   // Code for CSC
   double csc[8];
-  double dis[4];  // Array to store final distance traversed in the 4 possible
-                 // cases
-  double theta;  // Angle made by line joining centres of two circular paths with
-                // x-axis
+  double dis[4]; // Array to store final distance traversed in the 4 possible cases
+  double theta;  // Angle made by line joining centres of two circular paths with x-axis
   double N;
   double ltct_ac = INT_MAX, ltct_ca = INT_MAX;
 
@@ -335,8 +345,7 @@ double Algorithm::nonHolonomicWithoutObs(State src) {
   csc[2] = src.theta * PI / 180 - theta;
   csc[3] = theta - Algorithm::goal.theta * PI / 180;
 
-  if (lac >
-      2 * (rmin)) {  // For Transverse Common Tangent-anticlockwise to clockwise
+  if (lac > 2 * (rmin)) {  // For Transverse Common Tangent-anticlockwise to clockwise
     A = ACS;
     B = CE;
     N = ((B.y - A.y) / (B.x - A.x));
@@ -348,9 +357,7 @@ double Algorithm::nonHolonomicWithoutObs(State src) {
     double phi_ac = acos(2 * rmin / lac);
     csc[4] = PI / 2 - src.theta * PI / 180 + theta - phi_ac;
     csc[5] = PI / 2 - Algorithm::goal.theta * PI / 180 + theta - phi_ac;
-    ltct_ac =
-        sqrt(lac * lac -
-             4 * rmin * rmin);  // length of TCT-anticlockwise to clockwise
+    ltct_ac = sqrt(lac * lac - 4 * rmin * rmin);  // length of TCT-anticlockwise to clockwise
   } else {
     csc[4] = INT_MAX;
     csc[5] = INT_MAX;
@@ -369,8 +376,7 @@ double Algorithm::nonHolonomicWithoutObs(State src) {
     double phi_ca = acos(2 * rmin / lca);
     csc[6] = PI / 2 + src.theta * PI / 180 - theta - phi_ca;
     csc[7] = PI / 2 + Algorithm::goal.theta * PI / 180 - theta - phi_ca;
-    ltct_ca = sqrt(lca * lca -
-                   4 * rmin * rmin);  // lenth of TCT-clockwise to anticlockwise
+    ltct_ca = sqrt(lca * lca - 4 * rmin * rmin);  // lenth of TCT-clockwise to anticlockwise
   } else {
     csc[6] = INT_MAX;
     csc[7] = INT_MAX;
@@ -387,10 +393,8 @@ double Algorithm::nonHolonomicWithoutObs(State src) {
 
   dis[0] = (rmin) * (csc[0] + csc[1]) + lcc;  // For DCT-clockwise
   dis[1] = (rmin) * (csc[2] + csc[3]) + lcc;  // For DCT-anticlockwise
-  dis[2] = (rmin) * (csc[4] + csc[5]) +
-           ltct_ac;  // For TCT-anticlockwise to clockwise
-  dis[3] = (rmin) * (csc[6] + csc[7]) +
-           ltct_ca;  // For TCT-clockwise to anticlockwise
+  dis[2] = (rmin) * (csc[4] + csc[5]) + ltct_ac;  // For TCT-anticlockwise to clockwise
+  dis[3] = (rmin) * (csc[6] + csc[7]) + ltct_ca;  // For TCT-clockwise to anticlockwise
 
   double pathCSC = INT_MAX;  // To find min of all possible CSC paths
   for (i = 0; i < 4; i++) {
@@ -430,8 +434,8 @@ void Algorithm::hybridAstarPlanning() {
   display.drawCar(goal);
 
   // Initialize an array, visited, to mark the visited states.
-  int vis[GX][GY][Theta];
-  memset(vis, 0, sizeof(int) * GX * GY * Theta);
+  int visited[GX][GY][Theta];
+  memset(visited, 0, sizeof(int) * GX * GY * Theta);
 
   while (pq.size() > 0) {
     State current = pq.top();
@@ -470,12 +474,12 @@ void Algorithm::hybridAstarPlanning() {
     }
 
     // Check if the currect state has been visited. Skip if visited.
-    if (vis[current.gx][current.gy][current.gtheta]) {
+    if (visited[current.gx][current.gy][current.gtheta]) {
       continue;
     }
 
     // Mark the current stated as visited.
-    vis[current.gx][current.gy][current.gtheta] = 1;
+    visited[current.gx][current.gy][current.gtheta] = 1;
 
     // Obtain the neighboring nodes (or states here).
     std::vector<State> next = current.getNextStates();
@@ -484,7 +488,7 @@ void Algorithm::hybridAstarPlanning() {
     for (int i = 0; i < next.size(); i++) {
       // display.drawCar(next[i]);
       if (!m_map.checkCollision(next[i])) {
-        if (!vis[next[i].gx][next[i].gy][next[i].gtheta]) {
+        if (!visited[next[i].gx][next[i].gy][next[i].gtheta]) {
           // display.drawCar(next[i]);
 
           // Link the current Node and the next Node.

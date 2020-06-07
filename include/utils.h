@@ -22,6 +22,7 @@
 #define GY 80 // maximal x coordinate in the grid map
 #define Grid_Res 10 // grid map resolution
 
+// for running Dijkstra's search
 #define DX 240
 #define DY 240
 

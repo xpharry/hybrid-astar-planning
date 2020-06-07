@@ -30,10 +30,10 @@ public:
    ****************************************************************************/
 
   // Based on Dijkstra or A* planning
-  double holonomicWithObs(State src);
+  static double holonomicWithObs(State src);
 
   // Use Dubin's path length ignoring obstacles
-  double nonHolonomicWithoutObs(State src);
+  static double nonHolonomicWithoutObs(State src);
 
   /*****************************************************************************
    * Hybrid A* Planning
