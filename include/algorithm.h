@@ -24,6 +24,16 @@ public:
   void updateGoal(State goal);
 
   /*****************************************************************************
+   * heuristic functions
+   ****************************************************************************/
+
+  // Based on Dijkstra or A* planning
+  static double holonomicWithObs(State src);
+
+  // Use Dubin's path length ignoring obstacles
+  static double nonHolonomicWithoutObs(State src);
+
+  /*****************************************************************************
    * Hybrid A* Planning
    *   - on the 3d map
    *   - state: [x, y, theta]
@@ -39,16 +49,6 @@ private:
    *   - state: [x, y]
    ****************************************************************************/
   void astarPlanning();
-
-  /*****************************************************************************
-   * heuristic functions
-   ****************************************************************************/
-
-  // Based on Dijkstra or A* planning
-  static double holonomicWithObs(State src);
-
-  // Use Dubin's path length ignoring obstacles
-  static double nonHolonomicWithoutObs(State src);
 };
 
 #endif // ALGORITHM_H
