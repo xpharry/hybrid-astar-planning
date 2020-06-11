@@ -8,6 +8,7 @@ The code is ready to run a real Autonomous Vehicle with minor modifications, alt
 
 ## File Structure
 
+```
 .
 ├── CMakeLists.txt
 ├── README.md
@@ -27,15 +28,97 @@ The code is ready to run a real Autonomous Vehicle with minor modifications, alt
     ├── main.cpp
     ├── map.cpp
     └── state.cpp
+```
+
+## Instruction
+
+1) Build
+
+```
+mkdir build && cd build
+cmake ..
+make
+```
+
+2) Run
+
+```
+./hybrid_astar
+```
+
+3) Expected output
+
+For a given map which is picked from those in /data folder, a given initial pose and a goal pose for the vehicle, the program is to generate a drivable path linking the initial to the goal.
+
+In the terminal, a sequence of lines will be printed to show the running status until a final message is printed as in the following,
+
+```
+Obstacle present inside box
+Obstacle present inside box
+Obstacle present inside box
+Obstacle present inside box
+Obstacle present inside box
+Obstacle present inside box
+Reached goal.
+```
+
+After that, a new window will appear and display the generated path as a sequence of rectangles from the goal to the initial as in the following,
+
+![](./output/output1.png)
 
 ## Rubric Points
 
-- The project reads data from a file and process the data, or the program writes data to a file.
-- The project uses Object Oriented Programming techniques.
-- Classes use appropriate access specifiers for class members.
-- Classes abstract implementation details from their interfaces.
-- Classes encapsulate behavior.
-- The project makes use of references in function declarations.
+### 1. The project reads data from a file and process the data, or the program writes data to a file.
+
+In line 14 in ./src/main.cpp, we pass a path name to the map instance.
+
+```
+Map map("../data/map1.png");
+```
+
+In line 16 - 17 in ./src/map.cpp, the Map class will load the given map as a matrix using OpenCV as below,
+
+```
+// Load the map using OpenCV as a gray image.
+cv::Mat obsmap = cv::imread(map_file, 0);
+```
+
+### 2. The project uses Object Oriented Programming techniques.
+
+For example, the program constructs the collected algorithms as a class, Algorithm, in ./include/algorithm.h and ./src/algorithm.cpp.
+
+And Gui, Map, State, etc.
+
+### 3. Classes use appropriate access specifiers for class members.
+
+For example, in ./include/gui.h, we set some method functions as public and some variables as private.
+
+### 4. Classes abstract implementation details from their interfaces.
+
+The method ``Algorithm::hybridAstarPlanning()`` is a public method function in Algorithm class, which users car access it as an interface.
+
+### 5. Classes encapsulate behavior.
+
+The method ``Algorithm::astarPlanning()`` is a private method function in Algorithm class.
+
+### 6. The project makes use of references in function declarations.
+
+In line 49 - 60 in algorithm.cpp, the arguments of the overloaded operator "()" are passed by references.
+
+```
+/**
+ * 2d coordinate comparator
+ *
+ * Will be used in the heap.
+ */
+struct Compare2d {
+  bool operator()(const State &a, const State &b) {
+    // return a.cost2d > b.cost2d;	//simple dijkstra
+    return a.cost2d + abs(Algorithm::goal.dx - a.dx) + abs(Algorithm::goal.dy - a.dy) >
+           b.cost2d + abs(Algorithm::goal.dx - b.dx) + abs(Algorithm::goal.dy - b.dy);
+  }
+};
+```
 
 ## Algorithm Description
 
@@ -51,10 +134,6 @@ The code is ready to run a real Autonomous Vehicle with minor modifications, alt
 - initial
 - goal
 - velocity
-
-## Images
-
-<img src="https://imgur.com/wDC3stV.png" alt="Example1" width="400"/>             <img src="https://imgur.com/GZH6w0V.png" alt="Example2" width="400"/>
 
 ## Resources
 

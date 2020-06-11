@@ -8,6 +8,11 @@
 
 class Algorithm {
 public:
+  static State initial;
+  static State goal;
+  static int **obs_map;
+  static int **grid_obs_map;
+  static double **shortest_2d;
 
   /**
    * Constructor
@@ -17,6 +22,16 @@ public:
   void updateInitial(State initial);
 
   void updateGoal(State goal);
+
+  /*****************************************************************************
+   * Hybrid A* Planning
+   *   - on the 3d map
+   *   - state: [x, y, theta]
+   ****************************************************************************/
+  void hybridAstarPlanning();
+
+private:
+  Map m_map;
 
   /*****************************************************************************
    * A* Planning
@@ -34,21 +49,6 @@ public:
 
   // Use Dubin's path length ignoring obstacles
   static double nonHolonomicWithoutObs(State src);
-
-  /*****************************************************************************
-   * Hybrid A* Planning
-   *   - on the 3d map
-   *   - state: [x, y, theta]
-   ****************************************************************************/
-  void hybridAstarPlanning();
-
-public:
-  Map m_map;
-  static State initial;
-  static State goal;
-  static int **obs_map;
-  static int **grid_obs_map;
-  static double **shortest_2d;
 };
 
 #endif // ALGORITHM_H
