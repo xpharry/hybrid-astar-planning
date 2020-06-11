@@ -6,6 +6,37 @@ The Hybrid-A* algorithm is described here, [Practical Search Techniques in Path 
 
 The code is ready to run a real Autonomous Vehicle with minor modifications, although it runs standalone as a demo in this repository.
 
+## File Structure
+
+.
+├── CMakeLists.txt
+├── README.md
+├── data
+│   ├── map1.png
+│   ├── map2.png
+│   └── map3.png
+├── include
+│   ├── algorithm.h
+│   ├── gui.h
+│   ├── map.h
+│   ├── state.h
+│   └── utils.h
+└── src
+    ├── algorithm.cpp
+    ├── gui.cpp
+    ├── main.cpp
+    ├── map.cpp
+    └── state.cpp
+
+## Rubric Points
+
+- The project reads data from a file and process the data, or the program writes data to a file.
+- The project uses Object Oriented Programming techniques.
+- Classes use appropriate access specifiers for class members.
+- Classes abstract implementation details from their interfaces.
+- Classes encapsulate behavior.
+- The project makes use of references in function declarations.
+
 ## Algorithm Description
 
 * A 3D discrete search space is used but unlike traditional A*, hybrid-A* associates with each grid cell a continuous 3D state of the vehicle. The resulting path is guaranteed to be drivable (standard A* can only produce piece-wise linear paths).
