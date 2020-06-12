@@ -29,7 +29,7 @@ public:
 
   void show(int t);
 
-public:
+private:
   cv::Size display_size;
   cv::Mat display;
 };

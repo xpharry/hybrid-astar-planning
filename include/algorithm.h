@@ -8,6 +8,11 @@
 
 class Algorithm {
 public:
+  static State initial;
+  static State goal;
+  static int **obs_map;
+  static int **grid_obs_map;
+  static double **shortest_2d;
 
   /**
    * Constructor
@@ -17,13 +22,6 @@ public:
   void updateInitial(State initial);
 
   void updateGoal(State goal);
-
-  /*****************************************************************************
-   * A* Planning
-   *   - on the 2d grid map
-   *   - state: [x, y]
-   ****************************************************************************/
-  void astarPlanning();
 
   /*****************************************************************************
    * heuristic functions
@@ -42,13 +40,15 @@ public:
    ****************************************************************************/
   void hybridAstarPlanning();
 
-public:
+private:
   Map m_map;
-  static State initial;
-  static State goal;
-  static int **obs_map;
-  static int **grid_obs_map;
-  static double **shortest_2d;
+
+  /*****************************************************************************
+   * A* Planning
+   *   - on the 2d grid map
+   *   - state: [x, y]
+   ****************************************************************************/
+  void astarPlanning();
 };
 
 #endif // ALGORITHM_H
