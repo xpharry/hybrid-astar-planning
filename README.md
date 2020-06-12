@@ -1,6 +1,15 @@
 # Hybrid A* Path Planning
 
-This project is a continous work after [@tejus-gupta](https://github.com/tejus-gupta/hybrid-astar-planner.git) which implements Hybrid-A* Path Planning algorithm for a non-holonomic vehicle. It is inspired by this [Demo Video](https://www.youtube.com/watch?time_continue=2&v=qXZt-B7iUyw).
+This project is a continous work after [@tejus-gupta](https://github.com/tejus-gupta/hybrid-astar-planner.git). Thanks to his great work.
+
+This project implements Hybrid-A* Path Planning algorithm for a non-holonomic vehicle. It is inspired by this [Demo Video](https://www.youtube.com/watch?time_continue=2&v=qXZt-B7iUyw).
+
+My contributions are as below,
+
+- Test and update the code to make it runnable in at least Linux Ubuntu and Mac OS.
+- Refactor the code structure with Object Oriented Programming.
+- Replace the Dijkstra's 2d search algorithm with A* search.
+- Update the heuristic function as max(non-holonomic-without-obstacles, holonomic-with-obstacles).
 
 The Hybrid-A* algorithm is described here, [Practical Search Techniques in Path Planning for Autonomous Driving](https://ai.stanford.edu/~ddolgov/papers/dolgov_gpp_stair08.pdf).
 
